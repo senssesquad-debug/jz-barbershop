@@ -1,0 +1,1 @@
+import{i as n}from"./index-Ch8aPynP.js";const e=n(!1);function r(){return{bookingOpen:e,openBooking:o=>{o&&(o.metaKey||o.ctrlKey||o.shiftKey||o.button===1)||(o?.preventDefault?.(),e.value=!0)},closeBooking:()=>e.value=!1}}export{r as u};
