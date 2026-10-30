@@ -1,0 +1,45 @@
+# Builds the preview copy and publishes it to the gh-pages branch, which
+# GitHub Pages serves at https://senssesquad-debug.github.io/jz-barbershop/
+name: Deploy preview to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_PREVIEW: '1'
+
+      - name: Publish dist to gh-pages
+        run: |
+          cd dist
+          # Vite emits chunks starting with "_"; keep Jekyll from dropping them
+          touch .nojekyll
+          git init -q -b gh-pages
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -qm "Deploy ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" gh-pages
